@@ -1,0 +1,24 @@
+{
+  "name": "pi-coding-agent",
+  "version": "0.1.0",
+  "description": "Python port of pi-coding-agent session management and context compression",
+  "main": "pi_coding_agent/__init__.py",
+  "scripts": {
+    "test": "pytest",
+    "format": "black .",
+    "lint": "pylint pi_coding_agent",
+    "type-check": "mypy pi_coding_agent"
+  },
+  "dependencies": {
+    "pydantic": "^2.0.0",
+    "typing_extensions": "^4.0.0"
+  },
+  "devDependencies": {
+    "pytest": "^7.0.0",
+    "black": "^23.0.0",
+    "mypy": "^1.0.0",
+    "pylint": "^2.17.0"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}
