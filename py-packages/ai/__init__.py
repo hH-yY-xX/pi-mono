@@ -7,7 +7,7 @@ LLM providers including OpenAI, Anthropic, Google, and others.
 
 from .src import *
 
-__version__ = "0.1.0"
+__version__ = "0.51.6"
 __author__ = "Mario Zechner"
 
 __all__ = [

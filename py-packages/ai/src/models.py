@@ -10,24 +10,16 @@ from .types import (
     Usage,
     UsageCost
 )
+from .models_generated import MODELS as GENERATED_MODELS, get_model as get_generated_model
 
-# Auto-generated models would go here
-MODELS: Dict[str, Dict[str, Model]] = {
-    # This would be populated by the model generation script
-    "openai": {},
-    "anthropic": {},
-    "google": {},
-    "amazon-bedrock": {},
-}
-
-# Model registry
+# Initialize registry from generated models
 _model_registry: Dict[str, Dict[str, Model]] = {}
 
-# Initialize registry from MODELS
-for provider, models in MODELS.items():
-    _model_registry[provider] = {}
-    for model_id, model in models.items():
-        _model_registry[provider][model_id] = model
+# Group models by provider
+for model in GENERATED_MODELS:
+    if model.provider not in _model_registry:
+        _model_registry[model.provider] = {}
+    _model_registry[model.provider][model.id] = model
 
 T = TypeVar('T', bound=Api)
 

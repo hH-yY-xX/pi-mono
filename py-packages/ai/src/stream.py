@@ -1,36 +1,31 @@
 """
-Core streaming functions.
+Core streaming interface for AI providers.
 """
 
-from typing import Optional, TYPE_CHECKING
-from .api_registry import get_api_provider
-from .env_api_keys import get_env_api_key
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .types import (
         Api,
-        Model,
-        Context,
-        StreamOptions,
-        SimpleStreamOptions,
+        AssistantMessage,
         AssistantMessageEventStream,
-        AssistantMessage
+        Context,
+        Model,
+        ProviderStreamOptions,
+        SimpleStreamOptions,
+        StreamOptions,
     )
 
-def resolve_api_provider(api: Api):
-    """Resolve API provider or raise error."""
-    provider = get_api_provider(api)
-    if not provider:
-        raise ValueError(f"No API provider registered for api: {api}")
-    return provider
+from .api_registry import get_api_provider
+from .env_api_keys import get_env_api_key
 
 def stream(
     model: 'Model',
     context: 'Context',
-    options: Optional['StreamOptions'] = None,
+    options: 'ProviderStreamOptions' = None,
 ) -> 'AssistantMessageEventStream':
     """
-    Stream completion using provider-specific API.
+    Stream completion using the specified model and provider.
     
     Args:
         model: The model to use
@@ -38,15 +33,18 @@ def stream(
         options: Streaming options
         
     Returns:
-        Event stream for the completion
+        An event stream for the completion
+        
+    Raises:
+        ValueError: If no provider is registered for the model's API
     """
-    provider = resolve_api_provider(model.api)
-    return provider.stream(model, context, options)
+    provider = _resolve_api_provider(model.api)
+    return provider.stream(model, context, options or {})
 
 async def complete(
     model: 'Model',
     context: 'Context',
-    options: Optional['StreamOptions'] = None,
+    options: 'ProviderStreamOptions' = None,
 ) -> 'AssistantMessage':
     """
     Complete a conversation and return the final message.
@@ -57,7 +55,7 @@ async def complete(
         options: Streaming options
         
     Returns:
-        Final assistant message
+        The completed assistant message
     """
     s = stream(model, context, options)
     return await s.result()
@@ -65,7 +63,7 @@ async def complete(
 def stream_simple(
     model: 'Model',
     context: 'Context',
-    options: Optional['SimpleStreamOptions'] = None,
+    options: 'SimpleStreamOptions' = None,
 ) -> 'AssistantMessageEventStream':
     """
     Stream completion with simplified options.
@@ -76,15 +74,18 @@ def stream_simple(
         options: Simplified streaming options
         
     Returns:
-        Event stream for the completion
+        An event stream for the completion
+        
+    Raises:
+        ValueError: If no provider is registered for the model's API
     """
-    provider = resolve_api_provider(model.api)
-    return provider.stream_simple(model, context, options)
+    provider = _resolve_api_provider(model.api)
+    return provider.stream_simple(model, context, options or {})
 
 async def complete_simple(
     model: 'Model',
     context: 'Context',
-    options: Optional['SimpleStreamOptions'] = None,
+    options: 'SimpleStreamOptions' = None,
 ) -> 'AssistantMessage':
     """
     Complete a conversation with simplified options and return the final message.
@@ -95,7 +96,25 @@ async def complete_simple(
         options: Simplified streaming options
         
     Returns:
-        Final assistant message
+        The completed assistant message
     """
     s = stream_simple(model, context, options)
     return await s.result()
+
+def _resolve_api_provider(api: 'Api'):
+    """
+    Resolve API provider for the given API type.
+    
+    Args:
+        api: The API type
+        
+    Returns:
+        The API provider
+        
+    Raises:
+        ValueError: If no provider is registered for the API
+    """
+    provider = get_api_provider(api)
+    if not provider:
+        raise ValueError(f"No API provider registered for api: {api}")
+    return provider
